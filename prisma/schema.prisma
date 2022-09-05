@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["debian-openssl-3.0.x"]
 }
 
@@ -11,7 +11,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id Int @id @default(autoincrement())
-  name String
+model User {
+  id               String          @id @default(uuid())
+  age              Int
+  name             String
+  email            String          @unique
+  role             Role            @default(BASIC)
+  writtenPosts     Post[]          @relation("WrittenPosts")
+  favoritePosts    Post[]          @relation("FavoritePosts")
+  userPreference   UserPreference? @relation(fields: [userPreferenceId], references: [id])
+  userPreferenceId String?         @unique
+
+  @@index([email])
+}
+
+model UserPreference {
+  id           String  @id @default(uuid())
+  emailUpdates Boolean
+  user         User?
+}
+
+model Post {
+  id            String     @id @default(uuid())
+  title         String
+  averageRating Float
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  author        User       @relation("WrittenPosts", fields: [authorId], references: [id])
+  authorId      String
+  favoritedBy   User?      @relation("FavoritePosts", fields: [favoritedbyId], references: [id])
+  favoritedbyId String?
+  categories    category[]
+}
+
+model category {
+  id    String @id @default(uuid())
+  name  String @unique
+  posts Post[]
+}
+
+enum Role {
+  BASIC
+  ADMIN
 }
