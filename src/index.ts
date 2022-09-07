@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { __prod__ } from "./constants";
 import { PrismaClient } from "@prisma/client";
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express';
@@ -9,6 +10,7 @@ import { LoginResolver } from "./resolvers/LoginResolver";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import * as redis from "redis";
+import cors from "cors";
 
 
 export const prisma = new PrismaClient()
@@ -27,6 +29,11 @@ async function main(){
     const redisClient = redis.createClient({ legacyMode: true });
     await redisClient.connect().catch(console.error);
 
+    app.use(cors({
+        origin: 'http://localhost:3000',
+        credentials: true,
+    }));
+
     app.use(
         session({
           name: "idc",
@@ -35,7 +42,10 @@ async function main(){
             disableTouch: true,
         }),
           cookie:{
-            
+            maxAge: 1000*60*60*24*7, //1week
+            httpOnly: true,
+            secure: __prod__, // https
+            sameSite: "lax", //csrf
           },
           saveUninitialized: false,
           secret: "sddfgdfghdf",
@@ -48,12 +58,15 @@ async function main(){
             resolvers: [FindManyUserResolver, RegisterResolver, LoginResolver, FindUniqueUserResolver],
             validate: false,
         }),
-        context: () => ({ prisma }),
+        context: ({req, res}) => ({ prisma, req, res }),
     });
 
     await apolloServer.start();
 
-    apolloServer.applyMiddleware({app});
+    apolloServer.applyMiddleware({
+        app,
+        cors: false,
+    });
 
     app.listen(4000, () => {
         console.log('server listening on port 4000')

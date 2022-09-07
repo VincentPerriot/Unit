@@ -1,5 +1,5 @@
 import { User } from "@generated/type-graphql";
-import { Resolver, Mutation, Ctx, Arg, InputType, Field, ObjectType } from "type-graphql";
+import { Resolver, Mutation, Ctx, Arg, InputType, Field, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
 import "reflect-metadata";
 
@@ -32,9 +32,24 @@ class UserResponse {
 
 @Resolver(_of => User)
 export class LoginResolver {
+    @Query(() => User, {nullable: true})
+    async me(
+        @Ctx() { prisma, req }: any, 
+    ){
+        if(!req.session.userId){
+            return null
+        }
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.session.userId,
+            }
+        })
+        return user;
+    }
+
     @Mutation(_returns => UserResponse)
     async login(
-        @Ctx() { prisma }: any, 
+        @Ctx() { prisma, req }: any, 
         @Arg('input') input: LoginInput): Promise<UserResponse>{
             const user = await prisma.user.findUnique({
                 where: {
@@ -61,6 +76,9 @@ export class LoginResolver {
                 ],
                 };   
             }
+
+            req.session!.userId = user.id;
+
             return {
                 user,
             };
