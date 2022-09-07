@@ -4,7 +4,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "strict": true,
-    "lib": ["esnext", "esnext.asynciterable"],
+    "lib": ["esnext", "esnext.asynciterable", "es2018"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
@@ -12,6 +12,10 @@
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "moduleResolution": "node",
-    "module": "commonjs"
+    "module": "commonjs",
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
   }
 }

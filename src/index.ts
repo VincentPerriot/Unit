@@ -3,8 +3,9 @@ import { PrismaClient } from "@prisma/client";
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express';
 import {buildSchema} from 'type-graphql';
-import { resolvers } from "@generated/type-graphql";
-
+import { FindManyUserResolver, FindUniqueUserResolver } from "@generated/type-graphql";
+import { RegisterResolver } from "./resolvers/RegisterResolver";
+import { LoginResolver } from "./resolvers/LoginResolver";
 
 export const prisma = new PrismaClient()
 
@@ -17,7 +18,7 @@ async function main(){
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers,
+            resolvers: [FindManyUserResolver, RegisterResolver, LoginResolver, FindUniqueUserResolver],
             validate: false,
         }),
         context: () => ({ prisma }),
