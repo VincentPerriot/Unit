@@ -30,7 +30,7 @@ class UserResponse {
 }
 
 
-@Resolver()
+@Resolver(_of => User)
 export class LoginResolver {
     @Mutation(_returns => UserResponse)
     async login(
@@ -51,6 +51,7 @@ export class LoginResolver {
                 };
             }
             const valid = await argon2.verify(user.password, input.password);
+
             if(!valid){
                 return {
                     errors: [{
@@ -60,7 +61,8 @@ export class LoginResolver {
                 ],
                 };   
             }
-
-            return user;
+            return {
+                user,
+            };
     }
 }
