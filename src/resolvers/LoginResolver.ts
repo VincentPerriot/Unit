@@ -83,4 +83,18 @@ export class LoginResolver {
                 user,
             };
     }
+
+    @Mutation(() => Boolean)
+    logout(
+        @Ctx() {req, res}: any
+    ){
+        return new Promise((resolve) => req.session.destroy((err: any) => {
+            if(err) {
+                resolve(false)
+                return 
+            } 
+            res.clearCookie('idc');
+            resolve(true)
+        }))
+    }
 }
